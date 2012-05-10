@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="simpleSmtpServer" class="com.dumbster.smtp.SimpleSmtpServer"
+		factory-method="start">
+		<constructor-arg ref="smptServerPort" />
+	</bean>
+
+	<bean id="smptServerPort" class="java.lang.Integer">
+		<constructor-arg value="9900" />
+	</bean>
+</beans>
