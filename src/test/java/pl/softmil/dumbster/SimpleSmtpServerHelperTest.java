@@ -5,60 +5,42 @@ import static org.hamcrest.Matchers.is;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
+import org.junit.*;
 import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.*;
 
-import com.dumbster.smtp.SimpleSmtpServer;
+import pl.softmil.dumbster.junit.StartStopDumbsterRule;
+
 import com.dumbster.smtp.SmtpMessage;
 
 public class SimpleSmtpServerHelperTest {
     private static final int SMTP_PORT = 9999;
-
-    private static SimpleSmtpServerHelper simpleSmtpServerHelper;
     private static JavaMailSender javaMailSender;
+    private String from = "from@foo.pl";
+    private String to = "to@bar.pl";
+    private String subject = "jubject";
+    private String body = "Hi i am home";
+    
+    @BeforeClass
+    public static void buildMailSender() {
+        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
+        senderImpl.setDefaultEncoding("UTF-8");
+        senderImpl.setPort(SMTP_PORT);
+        senderImpl.setHost("localhost");
+        javaMailSender = senderImpl;
+    }
 
     @ClassRule
-    public static ExternalResource startDumbster = new ExternalResource() {
-        private SimpleSmtpServer simpleSmtpServer;
-
-        @Override
-        protected void before() throws Throwable {
-            simpleSmtpServer = SimpleSmtpServer.start(SMTP_PORT);
-            simpleSmtpServerHelper = new SimpleSmtpServerHelper(
-                    simpleSmtpServer);
-            javaMailSender = buildMailSender();
-        }
-
-        private JavaMailSender buildMailSender() {
-            JavaMailSenderImpl result = new JavaMailSenderImpl();
-            result.setDefaultEncoding("UTF-8");
-            result.setPort(SMTP_PORT);
-            result.setHost("localhost");
-            return result;
-        }
-
-        @Override
-        protected void after() {
-            simpleSmtpServer.stop();
-        }
-
-    };
+    public static StartStopDumbsterRule startStopDumbster = new StartStopDumbsterRule(
+            SMTP_PORT);
 
     @Test
     public void testASingleMessageReceived() throws MailException,
-            MessagingException {
-        String from = "from@foo.pl";
-        String to = "to@bar.pl";
-        String subject = "jubject";
-        String body = "Hi i am home";
+            MessagingException {      
         sendMailMessage(from, to, subject, body);
 
-        SmtpMessage aSingleMessageReceived = simpleSmtpServerHelper
+        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
+                startStopDumbster.getSimpleSmtpServer())
                 .aSingleMessageReceived();
 
         SmtpMessageHelper smtpMessageHelper = new SmtpMessageHelper(
@@ -67,6 +49,22 @@ public class SimpleSmtpServerHelperTest {
         smtpMessageHelper.assertFrom(is(from));
         smtpMessageHelper.assertTo(is(to));
         smtpMessageHelper.assertBody(is(body));
+    }
+    
+    
+    @Test
+    public void testASingleMessageReceivedCallRemovesReceivedMessage() throws MailException,
+            MessagingException {
+        sendMailMessage(from, to, subject, body);
+
+        SimpleSmtpServerHelper simpleSmtpServerHelper = new SimpleSmtpServerHelper(
+                startStopDumbster.getSimpleSmtpServer());
+        
+        simpleSmtpServerHelper.aSingleMessageReceived();
+        
+        sendMailMessage(from, to, subject, body);
+        
+        simpleSmtpServerHelper.aSingleMessageReceived();
     }
 
     private void sendMailMessage(String from, String to, String subject,

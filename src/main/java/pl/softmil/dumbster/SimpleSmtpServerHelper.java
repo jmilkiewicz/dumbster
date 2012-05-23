@@ -18,9 +18,10 @@ public class SimpleSmtpServerHelper {
 
     public SmtpMessage aSingleMessageReceived() {
         Iterator<?> receivedEmails = simpleSmtpServer.getReceivedEmail();
-        assertMessageExists(receivedEmails);
+        assertMessageExists(receivedEmails);        
         SmtpMessage email = (SmtpMessage)receivedEmails.next();
         assertNoMoreMessages(receivedEmails);
+        receivedEmails.remove();
         return email;
     }
 

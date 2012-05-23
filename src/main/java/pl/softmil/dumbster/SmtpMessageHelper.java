@@ -25,7 +25,7 @@ public class SmtpMessageHelper {
     public void assertFrom(Matcher<String> matcher) {
         assertThat("unable to match \"To\"", getHeaderValue("From"), matcher);
     }
-
+    
     public void assertSubject(Matcher<String> matcher) {
         assertThat("unable to match \"To\"", getHeaderValue("Subject"), matcher);
     }
