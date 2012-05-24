@@ -32,4 +32,13 @@ public class SimpleSmtpServerHelper {
     private void assertMessageExists(Iterator<?> receivedEmails) {
         assertThat("no messages sent to me :(",receivedEmails.hasNext(), equalTo(true));
     }
+
+    public void drainEmailQueue() {
+        Iterator<?> receivedEmails = simpleSmtpServer.getReceivedEmail();
+        while(receivedEmails.hasNext()){
+            receivedEmails.next();
+            receivedEmails.remove();
+        }
+        
+    }
 }

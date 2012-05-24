@@ -1,6 +1,7 @@
 package pl.softmil.dumbster;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -51,7 +52,6 @@ public class SimpleSmtpServerHelperTest {
         smtpMessageHelper.assertBody(is(body));
     }
     
-    
     @Test
     public void testASingleMessageReceivedCallRemovesReceivedMessage() throws MailException,
             MessagingException {
@@ -66,7 +66,22 @@ public class SimpleSmtpServerHelperTest {
         
         simpleSmtpServerHelper.aSingleMessageReceived();
     }
-
+    
+    @Test
+    public void testDrainEmailQueue() throws MailException,
+            MessagingException {      
+        sendMailMessage(from, to, subject, body);
+        sendMailMessage(from, to, subject, body);
+        sendMailMessage(from, to, subject, body);
+        
+        SimpleSmtpServerHelper simpleSmtpServerHelper = new SimpleSmtpServerHelper(
+                startStopDumbster.getSimpleSmtpServer());
+        simpleSmtpServerHelper.drainEmailQueue();
+        
+        assertThat(startStopDumbster.getSimpleSmtpServer().getReceivedEmailSize(), equalTo(0));
+    }
+    
+    
     private void sendMailMessage(String from, String to, String subject,
             String body) throws MessagingException {
         javaMailSender.send(buildMessage(from, to, subject, body));
