@@ -14,19 +14,19 @@ public class SmtpMessageHelper {
         this.smtpMessage = smtpMessage;
     }
 
-    public void assertBody(Matcher<String> matcher) {
+    public void assertBody(Matcher<? super String> matcher) {
         assertThat("unable to match body", smtpMessage.getBody(), matcher);
     }
 
-    public void assertTo(Matcher<String> matcher) {
+    public void assertTo(Matcher<? super String> matcher) {
         assertThat("unable to match \"From\"", getHeaderValue("To"), matcher);
     }
 
-    public void assertFrom(Matcher<String> matcher) {
+    public void assertFrom(Matcher<? super String> matcher) {
         assertThat("unable to match \"To\"", getHeaderValue("From"), matcher);
     }
     
-    public void assertSubject(Matcher<String> matcher) {
+    public void assertSubject(Matcher<? super String> matcher) {
         assertThat("unable to match \"To\"", getHeaderValue("Subject"), matcher);
     }
 
