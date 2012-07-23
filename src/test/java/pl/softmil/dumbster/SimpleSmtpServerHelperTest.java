@@ -3,6 +3,8 @@ package pl.softmil.dumbster;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -19,8 +21,8 @@ public class SimpleSmtpServerHelperTest {
     private static JavaMailSender javaMailSender;
     private String from = "from@foo.pl";
     private String to = "to@bar.pl";
-    private String subject = "jubject";
-    private String body = "Hi i am home";
+    private String subject = "zażółć żółtą gęśl";
+    private String body = "<html>Hi i am home</html>";
     
     @BeforeClass
     public static void buildMailSender() {
@@ -37,7 +39,7 @@ public class SimpleSmtpServerHelperTest {
 
     @Test
     public void testASingleMessageReceived() throws MailException,
-            MessagingException {      
+            MessagingException, UnsupportedEncodingException {      
         sendMailMessage(from, to, subject, body);
 
         SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
@@ -49,7 +51,6 @@ public class SimpleSmtpServerHelperTest {
         smtpMessageHelper.assertSubject(is(subject));
         smtpMessageHelper.assertFrom(is(from));
         smtpMessageHelper.assertTo(is(to));
-        smtpMessageHelper.assertBody(is(body));
     }
     
     @Test
@@ -90,11 +91,11 @@ public class SimpleSmtpServerHelperTest {
     private MimeMessage buildMessage(String from, String to, String subject,
             String body) throws MessagingException {
         MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, false);
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
         helper.setFrom(from);
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(body, false);
+        helper.setText(body, true);
         return message;
     }
 
