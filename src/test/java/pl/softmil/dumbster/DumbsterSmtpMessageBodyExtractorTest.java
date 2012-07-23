@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.hamcrest.Matcher;
+import org.jsoup.nodes.Element;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.io.ClassPathResource;
@@ -41,15 +43,7 @@ public class DumbsterSmtpMessageBodyExtractorTest {
         String emailBody = "<html><body><img src='cid:financeRingLogo'><br/>Zarejestruj sie przez kliknięcie na: <a id=\"registration-link\" href=\"http://www.onet.pl?costam=aaa&asas=333\">http://www.onet.pl?costam=aaa&asas=333</a></body></html>";
         sendEmailWithAttachement(emailBody);
 
-        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
-                .aSingleMessageReceived();
-        DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
-                aSingleMessageReceived);
-        assertThat(
-                dumbsterSmtpMessageBodyExtractor
-                        .extractHtmlElementById("registration-link"),
-                equalTo("http://www.onet.pl?costam=aaa&asas=333"));
+        assertElementHrefAttributeMatches("registration-link",equalTo("http://www.onet.pl?costam=aaa&asas=333"));
     }
 
     @Test
@@ -72,16 +66,22 @@ public class DumbsterSmtpMessageBodyExtractorTest {
     public void testExtractLinkByIdFrom7bitHtml() throws MessagingException {
         String emailBody = "<html><body><br/>Click on <a id=\"weird_id\" href=\"http://www.onet.pl?costam=aaa&asas=333\">http://www.onet.pl?costam=aaa&asas=333</a></body></html>";
         sendEmailNoAttachement(emailBody);
+        
+        assertElementHrefAttributeMatches(
+                "weird_id",
+                equalTo("http://www.onet.pl?costam=aaa&asas=333"));
+    }
 
+    private void assertElementHrefAttributeMatches(String elemId,
+            Matcher<? super String> matcher) {
         SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
                 startStopDumbster.getSimpleSmtpServer())
                 .aSingleMessageReceived();
         DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
                 aSingleMessageReceived);
-        assertThat(
-                dumbsterSmtpMessageBodyExtractor
-                        .extractHtmlElementById("weird_id"),
-                equalTo("http://www.onet.pl?costam=aaa&asas=333"));
+        Element elem = dumbsterSmtpMessageBodyExtractor
+                .extractHtmlElementById(elemId);
+        assertThat(elem.attr("href"), matcher);
     }
 
     @Test
@@ -105,15 +105,7 @@ public class DumbsterSmtpMessageBodyExtractorTest {
         String emailBody = "<html><body><br/>Zarejestruj się przez kliknięcie na: <a id=\"registration-link\" href=\"http://www.onet.pl?costam=aaa&asas=333\">http://www.onet.pl?costam=aaa&asas=333</a></body></html>";
         sendEmailNoAttachement(emailBody);
 
-        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
-                .aSingleMessageReceived();
-        DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
-                aSingleMessageReceived);
-        assertThat(
-                dumbsterSmtpMessageBodyExtractor
-                        .extractHtmlElementById("registration-link"),
-                equalTo("http://www.onet.pl?costam=aaa&asas=333"));
+        assertElementHrefAttributeMatches("registration-link", equalTo("http://www.onet.pl?costam=aaa&asas=333"));
     }
 
     private void sendEmailWithAttachement(String emailBody)
@@ -139,5 +131,4 @@ public class DumbsterSmtpMessageBodyExtractorTest {
         helper.setText(emailBody, true);
         javaMailSender.send(message);
     }
-
 }

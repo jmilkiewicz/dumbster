@@ -19,8 +19,8 @@ public class DumbsterSmtpMessageBodyExtractor {
         super();
         this.smtpMessage = smtpMessage;
     }
-
-    public String extractHtmlElementById(String id) {
+    
+    public Element extractHtmlElementById(String id) {
         String body = smtpMessage.getBody();
         String quotedPrintable = digoutHtmlBody(body);
         String contentTransferEncoding = digoutBodyContentTransferEncoding(body);
@@ -29,7 +29,7 @@ public class DumbsterSmtpMessageBodyExtractor {
         if(elementById == null){
             throw new RuntimeException("element with id='"+ id +"' not found");
         }
-        return elementById.attr("href");
+        return elementById;
     }
 
     private String digoutBodyContentTransferEncoding(String body) {
