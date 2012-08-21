@@ -13,6 +13,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.*;
 
 import pl.softmil.dumbster.junit.StartStopDumbsterRule;
+import pl.softmil.test.utils.waituntil.WaitUntilTimes;
 
 import com.dumbster.smtp.SmtpMessage;
 
@@ -23,7 +24,7 @@ public class SimpleSmtpServerHelperTest {
     private String to = "to@bar.pl";
     private String subject = "zażółć żółtą gęśl";
     private String body = "<html>Hi i am home</html>";
-    
+
     @BeforeClass
     public static void buildMailSender() {
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
@@ -39,11 +40,10 @@ public class SimpleSmtpServerHelperTest {
 
     @Test
     public void testASingleMessageReceived() throws MailException,
-            MessagingException, UnsupportedEncodingException {      
+            MessagingException, UnsupportedEncodingException {
         sendMailMessage(from, to, subject, body);
 
-        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
+        SmtpMessage aSingleMessageReceived = smtpServerHelper()
                 .aSingleMessageReceived();
 
         SmtpMessageHelper smtpMessageHelper = new SmtpMessageHelper(
@@ -52,37 +52,40 @@ public class SimpleSmtpServerHelperTest {
         smtpMessageHelper.assertFrom(is(from));
         smtpMessageHelper.assertTo(is(to));
     }
-    
+
+    private SimpleSmtpServerHelper smtpServerHelper() {
+        return new SimpleSmtpServerHelper(
+                startStopDumbster.getSimpleSmtpServer(),
+                WaitUntilTimes.withMaxAndSleepInteval(1000, 100));
+    }
+
     @Test
-    public void testASingleMessageReceivedCallRemovesReceivedMessage() throws MailException,
-            MessagingException {
+    public void testASingleMessageReceivedCallRemovesReceivedMessage()
+            throws MailException, MessagingException {
         sendMailMessage(from, to, subject, body);
 
-        SimpleSmtpServerHelper simpleSmtpServerHelper = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer());
-        
+        SimpleSmtpServerHelper simpleSmtpServerHelper = smtpServerHelper();
+
         simpleSmtpServerHelper.aSingleMessageReceived();
-        
+
         sendMailMessage(from, to, subject, body);
-        
+
         simpleSmtpServerHelper.aSingleMessageReceived();
     }
-    
+
     @Test
-    public void testDrainEmailQueue() throws MailException,
-            MessagingException {      
+    public void testDrainEmailQueue() throws MailException, MessagingException {
         sendMailMessage(from, to, subject, body);
         sendMailMessage(from, to, subject, body);
         sendMailMessage(from, to, subject, body);
-        
-        SimpleSmtpServerHelper simpleSmtpServerHelper = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer());
+
+        SimpleSmtpServerHelper simpleSmtpServerHelper = smtpServerHelper();
         simpleSmtpServerHelper.drainEmailQueue();
-        
-        assertThat(startStopDumbster.getSimpleSmtpServer().getReceivedEmailSize(), equalTo(0));
+
+        assertThat(startStopDumbster.getSimpleSmtpServer()
+                .getReceivedEmailSize(), equalTo(0));
     }
-    
-    
+
     private void sendMailMessage(String from, String to, String subject,
             String body) throws MessagingException {
         javaMailSender.send(buildMessage(from, to, subject, body));

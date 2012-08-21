@@ -14,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.*;
 
 import pl.softmil.dumbster.junit.StartStopDumbsterRule;
+import pl.softmil.test.utils.waituntil.WaitUntilTimes;
 
 import com.dumbster.smtp.SmtpMessage;
 
@@ -52,8 +53,7 @@ public class DumbsterSmtpMessageBodyExtractorTest {
         String emailBody = "http://www.onet.pl?costam=aaa&asas=333";
         sendEmailNoAttachement(emailBody);
 
-        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
+        SmtpMessage aSingleMessageReceived = smtpMessageHelper()
                 .aSingleMessageReceived();
         DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
                 aSingleMessageReceived);
@@ -75,7 +75,7 @@ public class DumbsterSmtpMessageBodyExtractorTest {
     private void assertElementHrefAttributeMatches(String elemId,
             Matcher<? super String> matcher) {
         SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
+                startStopDumbster.getSimpleSmtpServer(), WaitUntilTimes.withMaxAndSleepInteval(1000, 100))
                 .aSingleMessageReceived();
         DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
                 aSingleMessageReceived);
@@ -90,13 +90,17 @@ public class DumbsterSmtpMessageBodyExtractorTest {
         String emailBody = "<html><body><br/>Click on <a id=\"foo_id\" href=\"http://www.onet.pl?costam=aaa&asas=333\">http://www.onet.pl?costam=aaa&asas=333</a></body></html>";
         sendEmailNoAttachement(emailBody);
 
-        SmtpMessage aSingleMessageReceived = new SimpleSmtpServerHelper(
-                startStopDumbster.getSimpleSmtpServer())
+        SmtpMessage aSingleMessageReceived = smtpMessageHelper()
                 .aSingleMessageReceived();
         DumbsterSmtpMessageBodyExtractor dumbsterSmtpMessageBodyExtractor = new DumbsterSmtpMessageBodyExtractor(
                 aSingleMessageReceived);
         exception.expect(RuntimeException.class);
         dumbsterSmtpMessageBodyExtractor.extractHtmlElementById("bar_id");
+    }
+
+    private SimpleSmtpServerHelper smtpMessageHelper() {
+        return new SimpleSmtpServerHelper(
+                startStopDumbster.getSimpleSmtpServer(), WaitUntilTimes.withMaxAndSleepInteval(1000, 100));
     }
 
     @Test

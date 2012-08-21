@@ -12,9 +12,11 @@ import com.dumbster.smtp.SmtpMessage;
 
 public class SimpleSmtpServerHelper {
     private final SimpleSmtpServer simpleSmtpServer;
+    private final WaitUntilTimes waitUntilTimes;
     
     
-    public SimpleSmtpServerHelper(SimpleSmtpServer simpleSmtpServer) {
+    public SimpleSmtpServerHelper(SimpleSmtpServer simpleSmtpServer, WaitUntilTimes waitUntilTimes) {
+        this.waitUntilTimes = waitUntilTimes;
         this.simpleSmtpServer = simpleSmtpServer;
     }
 
@@ -28,7 +30,7 @@ public class SimpleSmtpServerHelper {
     }
 
     private void waitUntilEmailQueueNotEmpty() {
-        WaitUntil<Object> waitUntil = new WaitUntil<Object>(5000, 300, new Until<Object>() {
+        WaitUntil<Object> waitUntil = new WaitUntil<Object>(waitUntilTimes, new Until<Object>() {
 
             @Override
             public boolean isTrue(Object t) {
