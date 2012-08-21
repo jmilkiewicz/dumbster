@@ -28,7 +28,7 @@ public class SimpleSmtpServerHelper {
     }
 
     private void waitUntilEmailQueueNotEmpty() {
-        WaitUntil<Object> waitUntil = new WaitUntil<Object>(3000, 100, new Until<Object>() {
+        WaitUntil<Object> waitUntil = new WaitUntil<Object>(5000, 300, new Until<Object>() {
 
             @Override
             public boolean isTrue(Object t) {
@@ -43,7 +43,7 @@ public class SimpleSmtpServerHelper {
            
             @Override
             public String toString() {
-                return "email message queue not empty, but no messages sent to me  :(";
+                return "email message queue NOT empty";
             } 
             
         });
