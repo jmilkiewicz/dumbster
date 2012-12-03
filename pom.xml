@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pl.softmil.test</groupId>
 	<artifactId>dumbster</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<description>http://quintanasoft.com/dumbster/ utilities and helpers</description>
 	<issueManagement>
 		<system>github</system>
